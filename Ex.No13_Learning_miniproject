@@ -1,83 +1,116 @@
-
-## Ex.No: 13 Learning – Use Supervised Learning  
-### DATE: 31-10-2025                                                                           
+# Ex.No: 13 Learning – Use Supervised Learning  
+### DATE: 31.10.2025                                                                           
 ### REGISTER NUMBER : 212222060227
 ### AIM: 
-To write a program to train a Random Forest Regressor model for Chennai Weather Prediction using supervised learning, in order to predict the maximum temperature based on previous day’s temperature and rainfall data.
+To write a program to train the classifier for Diabetes Prediction.
 ###  Algorithm:
-1. **Import** the necessary libraries such as `pandas`, `sklearn`, `seaborn`, and `matplotlib`.  
-2. **Load** the dataset `chennai-temp-rains.csv` using `pandas`.  
-3. **Preprocess** the data — clean missing values, convert data types, and sort by date.  
-4. **Create** lag features (`TempMax_lag1`, `TempMin_lag1`, `Rain_lag1`) for previous day’s data.  
-5. **Split** the dataset into training and testing sets using `train_test_split()`.  
-6. **Train** the model using **Random Forest Regressor** on the training data.  
-7. **Predict** the maximum temperature using the test data.  
-8. **Evaluate** the model using **Mean Squared Error (MSE)** and **R² Score**.  
-9. **Visualize** the actual vs predicted values and temperature distribution using plots.  
+1. Start the program.
+2. Import required Python libraries, including NumPy, Pandas, Google Colab, Gradio, and various
+scikit-learn modules.
+3. Mount Google Drive using Google Colab's 'drive.mount()' method to access the data file
+located in Google Drive.
+4. Install the Gradio library using 'pip install gradio'.
+5. Load the diabetes dataset from a CSV file ('diabetes.csv') using Pandas.
+6. Separate the target variable ('Outcome') from the input features and Scale the input features
+using the StandardScaler from scikit-learn.
+7. Create a multi-layer perceptron (MLP) classifier model using scikit-learn's 'MLPClassifier'.
+8. Train the model using the training data (x_train and y_train).
+9. Define a function named 'diabetes' that takes input parameters for various features and Use
+the trained machine learning model to predict the outcome based on the input features.
+10. Create a Gradio interface using 'gr.Interface' and Specify the function to be used to make
+predictions based on user inputs.
+11. Launch the Gradio web application, enabling sharing, to allow users to input their data and
+get predictions regarding diabetes risk.
+12. Stop the program.
 ### Program:
 ```
-# Program to implement a Random Forest model for Chennai Weather Prediction
-# Developed by: SARAVANAN.B
-# RegisterNumber: 212222060227
-
+from google.colab import drive
+drive.mount('/content/gdrive')
+```
+```
+#import packages
+import numpy as np
 import pandas as pd
+```
+```
+pip install gradio
+```
+```
+pip install typing-extensions --upgrade
+```
+```
+!python --version
+```
+```
+ pip install --upgrade typing
+```
+```
+import gradio as gr
+import pandas as pd
+```
+```
+cd /content/gdrive/MyDrive/demo/gradio_project-main
+```
+```
+#get the data
+data = pd.read_csv('diabetes.csv')
+data.head()
+```
+```
+print(data.columns)
+```
+```
+x = data.drop(['Outcome'], axis=1)
+y = data['Outcome']
+print(x[:5])
+```
+```
+#split data
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error, r2_score
-import seaborn as sns
-import matplotlib.pyplot as plt
 
-data = pd.read_csv("chennai-temp-rains.csv")
-
-data.rename(columns={'Temp Max':'TempMax','Temp Min':'TempMin','Rain':'Rain','Date':'Date'}, inplace=True)
-data.replace('-----', None, inplace=True)
-
-data['Date'] = pd.to_datetime(data['Date'], format='%d-%m-%Y', errors='coerce')
-data['TempMax'] = pd.to_numeric(data['TempMax'], errors='coerce')
-data['TempMin'] = pd.to_numeric(data['TempMin'], errors='coerce')
-data['Rain'] = pd.to_numeric(data['Rain'], errors='coerce')
-
-data = data.dropna(subset=['Date','TempMax','TempMin','Rain'])
-data = data.sort_values('Date').reset_index(drop=True)
-
-data['TempMax_lag1'] = data['TempMax'].shift(1)
-data['TempMin_lag1'] = data['TempMin'].shift(1)
-data['Rain_lag1'] = data['Rain'].shift(1)
-data = data.dropna()
-
-X = data[['TempMax_lag1','TempMin_lag1','Rain_lag1']]
-y = data['TempMax']
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, shuffle=False, random_state=42)
-
-model = RandomForestRegressor(n_estimators=100, random_state=42)
-model.fit(X_train, y_train)
-
-y_pred = model.predict(X_test)
-mse = mean_squared_error(y_test, y_pred)
-r2 = r2_score(y_test, y_pred)
-
-print("Mean Squared Error:", mse)
-print("R2 Score:", r2)
-
-plt.figure(figsize=(8,5))
-sns.scatterplot(x=y_test, y=y_pred, alpha=0.7, color='green')
-plt.xlabel("Actual TempMax")
-plt.ylabel("Predicted TempMax")
-plt.title("Actual vs Predicted Temperature using Random Forest")
-plt.grid(True)
-plt.show()
-
-plt.figure(figsize=(8,5))
-sns.kdeplot(y_test, label='Actual', fill=True)
-sns.kdeplot(y_pred, label='Predicted', fill=True, color='red')
-plt.title("Temperature Distribution Comparison (Random Forest)")
-plt.legend()
-plt.show()
+x_train, x_test, y_train, y_test= train_test_split(x,y)
+```
+```
+#scale data
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+x_train_scaled = scaler.fit_transform(x_train)
+x_test_scaled = scaler.fit_transform(x_test)
+```
+```
+#instatiate model
+from sklearn.neural_network import MLPClassifier
+model = MLPClassifier(max_iter=1000, alpha=1)
+model.fit(x_train, y_train)
+print("Model Accuracy on training set:", model.score(x_train, y_train))
+print("Model Accuracy on Test Set:", model.score(x_test, y_test))
+```
+```
+print(data.columns)
+```
+```
+#create a function for gradio
+def diabetes(Pregnancies, Glucose, Blood_Pressure, SkinThickness, Insulin, BMI,Diabetes_Pedigree, Age):
+    x = np.array([Pregnancies,Glucose,Blood_Pressure,SkinThickness,Insulin,BMI,Diabetes_Pedigree,Age])
+    prediction = model.predict(x.reshape(1, -1))
+    if(prediction==0):
+      return "NO"
+    else:
+      return "YES"
+```
+```
+outputs = gr.Textbox()
+app = gr.Interface(fn=diabetes, inputs=['number','number','number','number','number','number','number','number'], outputs=outputs,description="Detection of Diabeties")
+app.launch(share=True)
 ```
 
 ### Output:
-<img width="1268" height="575" alt="image" src="https://github.com/user-attachments/assets/6c1184f2-91be-4c88-b29f-289c0297e348" />
-<img width="1249" height="561" alt="image" src="https://github.com/user-attachments/assets/14246f3b-7f93-46be-8002-ce7c545ee96c" />
+![image](https://github.com/NithishThirumalai/AI_Lab_2023-24/assets/114301782/f65f8935-6a7a-4259-80d1-9ad3f507c81a)
+![image](https://github.com/NithishThirumalai/AI_Lab_2023-24/assets/114301782/f06f890e-a127-43ed-84d0-c0630ea114bb)
+![image](https://github.com/NithishThirumalai/AI_Lab_2023-24/assets/114301782/afa24ae2-4f97-4a7a-b291-0c63aa878612)
+![280472576-361414a1-d8fa-4fe0-a7b7-6cfc96201742](https://github.com/NithishThirumalai/AI_Lab_2023-24/assets/114301782/d907f1f6-49ff-41c9-95c1-09d90122ee41)
+
+
 
 
 ### Result:
